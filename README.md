@@ -42,6 +42,10 @@ Run the comprehensive test suite (verifying DSP behaviors like Impulse, Alternat
 carp -x test/fft_test.carp
 ```
 
+## Examples
+
+See [examples.md](examples.md) for usage examples.
+
 ## License
 
 MIT
