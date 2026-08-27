@@ -6,17 +6,15 @@
 
 (defmodule FFT
   (doc power-of-two? "checks if `n` is a power of two.")
-  (defn power-of-two? [n]
-    (and (> n 0) (= 0 (Int.bit-and n (- n 1)))))
+  (defn power-of-two? [n] (and (> n 0) (= 0 (Int.bit-and n (- n 1)))))
 
-  (doc next-power-of-two "finds the smallest power of two greater than or equal to `n`.")
+  (doc next-power-of-two
+    "finds the smallest power of two greater than or equal to `n`.")
   (defn next-power-of-two [n]
-    (let-do [res 1]
-      (while (< res n)
-        (set! res (* res 2)))
-      res))
+    (let-do [res 1] (while (< res n) (set! res (* res 2))) res))
 
-  (doc bit-reverse-permute! "performs an in-place bit-reversal permutation on the array.")
+  (doc bit-reverse-permute!
+    "performs an in-place bit-reversal permutation on the array.")
   (defn bit-reverse-permute! [arr]
     (let [n (Array.length arr)
           j 0]
@@ -31,23 +29,24 @@
             (let [m (/ n 2)]
               (do
                 (while (and (> m 0) (>= j m))
-                  (do
-                    (set! j (- j m))
-                    (set! m (/ m 2))))
+                  (do (set! j (- j m)) (set! m (/ m 2))))
                 (set! j (+ j m)))))))))
 
-  (doc fft! "performs a 1D Cooley-Tukey Radix-2 FFT in-place on the given array of complex numbers. Set `inverse` to true for IFFT. Asserts that the length of the array is a power of two.")
+  (doc fft!
+    "performs a 1D Cooley-Tukey Radix-2 FFT in-place on the given array of complex numbers. Set `inverse` to true for IFFT. Asserts that the length of the array is a power of two.")
   (defn fft! [arr inverse]
     (let [n (Array.length arr)]
       (do
         (assert (power-of-two? n))
         ;; 1. Bit-reversal permutation
         (bit-reverse-permute! arr)
-        
+
         ;; 2. Cooley-Tukey decimation-in-time
         (let [len 2]
           (while (<= len n)
-            (let [ang (* (/ (* 2.0 Double.pi) (Double.from-int len)) (if inverse 1.0 -1.0))
+            (let [ang (*
+                    (/ (* 2.0 Double.pi) (Double.from-int len))
+                    (if inverse 1.0 -1.0))
                   wlen (Complex.from-polar 1.0 ang)
                   half-len (/ len 2)]
               (do
@@ -68,7 +67,7 @@
                               (set! w (Complex.* &w &wlen)))))
                         (set! i (+ i len))))))
                 (set! len (* len 2))))))
-        
+
         ;; 3. Scale if inverse
         (when inverse
           (let [scale-factor (/ 1.0 (Double.from-int n))]
@@ -78,41 +77,32 @@
                                          (* @(Complex.imag &val) scale-factor))]
                 (Array.aset! arr i scaled))))))))
 
-  (doc try-fft "attempts to perform a 1D FFT on the array of complex numbers, returning a Result.")
+  (doc try-fft
+    "attempts to perform a 1D FFT on the array of complex numbers, returning a Result.")
   (defn try-fft [arr]
     (let [n (Array.length arr)]
       (if (not (power-of-two? n))
-          (Error @"Array length must be a power of two")
-          (let [copy-arr @arr]
-            (do
-              (fft! &copy-arr false)
-              (Success copy-arr))))))
+        (Error @"Array length must be a power of two")
+        (let [copy-arr @arr] (do (fft! &copy-arr false) (Success copy-arr))))))
 
-  (doc try-ifft "attempts to perform a 1D inverse FFT on the array of complex numbers, returning a Result.")
+  (doc try-ifft
+    "attempts to perform a 1D inverse FFT on the array of complex numbers, returning a Result.")
   (defn try-ifft [arr]
     (let [n (Array.length arr)]
       (if (not (power-of-two? n))
-          (Error @"Array length must be a power of two")
-          (let [copy-arr @arr]
-            (do
-              (fft! &copy-arr true)
-              (Success copy-arr))))))
+        (Error @"Array length must be a power of two")
+        (let [copy-arr @arr] (do (fft! &copy-arr true) (Success copy-arr))))))
 
-  (doc fft "performs a 1D FFT on the array of complex numbers. Asserts that the length is a power of two.")
-  (defn fft [arr]
-    (let [copy-arr @arr]
-      (do
-        (fft! &copy-arr false)
-        copy-arr)))
+  (doc fft
+    "performs a 1D FFT on the array of complex numbers. Asserts that the length is a power of two.")
+  (defn fft [arr] (let [copy-arr @arr] (do (fft! &copy-arr false) copy-arr)))
 
-  (doc ifft "performs a 1D inverse FFT on the array of complex numbers. Asserts that the length is a power of two.")
-  (defn ifft [arr]
-    (let [copy-arr @arr]
-      (do
-        (fft! &copy-arr true)
-        copy-arr)))
+  (doc ifft
+    "performs a 1D inverse FFT on the array of complex numbers. Asserts that the length is a power of two.")
+  (defn ifft [arr] (let [copy-arr @arr] (do (fft! &copy-arr true) copy-arr)))
 
-  (doc rfft "performs a Real FFT on the given array of real numbers, returning the full complex spectrum. Asserts that the length is a power of two.")
+  (doc rfft
+    "performs a Real FFT on the given array of real numbers, returning the full complex spectrum. Asserts that the length is a power of two.")
   (defn rfft [arr]
     (let [n (Array.length arr)]
       (do
@@ -124,18 +114,19 @@
             (fft! &c-arr false)
             c-arr)))))
 
-  (doc rfft-one-sided "performs a Real FFT on the given array of real numbers, returning only the one-sided complex spectrum (first N/2 + 1 elements). Asserts that the length is a power of two.")
+  (doc rfft-one-sided
+    "performs a Real FFT on the given array of real numbers, returning only the one-sided complex spectrum (first N/2 + 1 elements). Asserts that the length is a power of two.")
   (defn rfft-one-sided [arr]
     (let [full (rfft arr)
           n (Array.length &full)
           out-len (+ (/ n 2) 1)
           half-arr (replicate out-len &(Complex.zero))]
       (do
-        (for [i 0 out-len]
-          (Array.aset! &half-arr i @(Array.unsafe-nth &full i)))
+        (for [i 0 out-len] (Array.aset! &half-arr i @(Array.unsafe-nth &full i)))
         half-arr)))
 
-  (doc irfft "reconstructs a real signal from its one-sided complex spectrum of size M = N/2 + 1, enforcing Hermitian symmetry and running an inverse FFT.")
+  (doc irfft
+    "reconstructs a real signal from its one-sided complex spectrum of size M = N/2 + 1, enforcing Hermitian symmetry and running an inverse FFT.")
   (defn irfft [arr]
     (let [m (Array.length arr)
           n (* (- m 1) 2)
@@ -148,13 +139,11 @@
         (for [k 1 (/ n 2)]
           (let [val (Array.unsafe-nth arr k)
                 c-val (Complex.conj val)]
-            (do
-              (Array.aset! &full k @val)
-              (Array.aset! &full (- n k) c-val))))
-        
+            (do (Array.aset! &full k @val) (Array.aset! &full (- n k) c-val))))
+
         ;; Perform inverse FFT
         (fft! &full true)
-        
+
         ;; Extract real parts
         (let [r-arr (replicate n &0.0)]
           (do
@@ -162,7 +151,8 @@
               (Array.aset! &r-arr i @(Complex.real (Array.unsafe-nth &full i))))
             r-arr)))))
 
-  (doc fft2d! "performs a 2D Cooley-Tukey Radix-2 FFT in-place on the given flat array representing a 2D grid of size rows x cols.")
+  (doc fft2d!
+    "performs a 2D Cooley-Tukey Radix-2 FFT in-place on the given flat array representing a 2D grid of size rows x cols.")
   (defn fft2d! [arr rows cols inverse]
     (do
       ;; 1. FFT on each row
@@ -177,7 +167,7 @@
             ;; Write back row
             (for [c 0 cols]
               (Array.aset! arr (+ (* r cols) c) @(Array.unsafe-nth &row-arr c))))))
-      
+
       ;; 2. FFT on each col
       (let [col-arr (replicate rows &(Complex.zero))]
         (for [c 0 cols]
@@ -191,31 +181,30 @@
             (for [r 0 rows]
               (Array.aset! arr (+ (* r cols) c) @(Array.unsafe-nth &col-arr r))))))))
 
-  (doc try-fft2d "attempts to perform a 2D FFT on a flat array of size rows x cols, returning a Result.")
+  (doc try-fft2d
+    "attempts to perform a 2D FFT on a flat array of size rows x cols, returning a Result.")
   (defn try-fft2d [arr rows cols]
     (let [n (Array.length arr)]
       (if (not (= n (* rows cols)))
-          (Error @"Array size does not match rows * cols")
-          (if (or (not (power-of-two? rows)) (not (power-of-two? cols)))
-              (Error @"Rows and columns must be powers of two")
-              (let [copy-arr @arr]
-                (do
-                  (fft2d! &copy-arr rows cols false)
-                  (Success copy-arr)))))))
+        (Error @"Array size does not match rows * cols")
+        (if (or (not (power-of-two? rows)) (not (power-of-two? cols)))
+          (Error @"Rows and columns must be powers of two")
+          (let [copy-arr @arr]
+            (do (fft2d! &copy-arr rows cols false) (Success copy-arr)))))))
 
-  (doc try-ifft2d "attempts to perform a 2D inverse FFT on a flat array of size rows x cols, returning a Result.")
+  (doc try-ifft2d
+    "attempts to perform a 2D inverse FFT on a flat array of size rows x cols, returning a Result.")
   (defn try-ifft2d [arr rows cols]
     (let [n (Array.length arr)]
       (if (not (= n (* rows cols)))
-          (Error @"Array size does not match rows * cols")
-          (if (or (not (power-of-two? rows)) (not (power-of-two? cols)))
-              (Error @"Rows and columns must be powers of two")
-              (let [copy-arr @arr]
-                (do
-                  (fft2d! &copy-arr rows cols true)
-                  (Success copy-arr)))))))
+        (Error @"Array size does not match rows * cols")
+        (if (or (not (power-of-two? rows)) (not (power-of-two? cols)))
+          (Error @"Rows and columns must be powers of two")
+          (let [copy-arr @arr]
+            (do (fft2d! &copy-arr rows cols true) (Success copy-arr)))))))
 
-  (doc fft2d "performs a 2D FFT on a flat array of size rows x cols. Asserts size and powers of two.")
+  (doc fft2d
+    "performs a 2D FFT on a flat array of size rows x cols. Asserts size and powers of two.")
   (defn fft2d [arr rows cols]
     (let [copy-arr @arr]
       (do
@@ -225,7 +214,8 @@
         (fft2d! &copy-arr rows cols false)
         copy-arr)))
 
-  (doc ifft2d "performs a 2D inverse FFT on a flat array of size rows x cols. Asserts size and powers of two.")
+  (doc ifft2d
+    "performs a 2D inverse FFT on a flat array of size rows x cols. Asserts size and powers of two.")
   (defn ifft2d [arr rows cols]
     (let [copy-arr @arr]
       (do
@@ -241,21 +231,21 @@
           out (replicate new-len &0.0)]
       (do
         (assert (>= new-len old-len))
-        (for [i 0 old-len]
-          (Array.aset! &out i @(Array.unsafe-nth arr i)))
+        (for [i 0 old-len] (Array.aset! &out i @(Array.unsafe-nth arr i)))
         out)))
 
-  (doc pad-zero-complex "pads a complex array with complex zeros to the specified new length.")
+  (doc pad-zero-complex
+    "pads a complex array with complex zeros to the specified new length.")
   (defn pad-zero-complex [arr new-len]
     (let [old-len (Array.length arr)
           out (replicate new-len &(Complex.zero))]
       (do
         (assert (>= new-len old-len))
-        (for [i 0 old-len]
-          (Array.aset! &out i @(Array.unsafe-nth arr i)))
+        (for [i 0 old-len] (Array.aset! &out i @(Array.unsafe-nth arr i)))
         out)))
 
-  (doc fftshift "shifts the zero-frequency component to the center of the spectrum.")
+  (doc fftshift
+    "shifts the zero-frequency component to the center of the spectrum.")
   (defn fftshift [arr]
     (let [n (Array.length arr)
           half (/ (+ n 1) 2)
@@ -265,7 +255,8 @@
           (Array.aset! &out (Int.mod (+ i half) n) @(Array.unsafe-nth arr i)))
         out)))
 
-  (doc ifftshift "shifts the zero-frequency component back from the center of the spectrum.")
+  (doc ifftshift
+    "shifts the zero-frequency component back from the center of the spectrum.")
   (defn ifftshift [arr]
     (let [n (Array.length arr)
           half (/ n 2)
@@ -275,25 +266,23 @@
           (Array.aset! &out (Int.mod (+ i half) n) @(Array.unsafe-nth arr i)))
         out)))
 
-  (doc frequency-axis "generates the positive frequency bins (size N/2 + 1) for a real FFT of length `n` and sampling rate `sample-rate`.")
+  (doc frequency-axis
+    "generates the positive frequency bins (size N/2 + 1) for a real FFT of length `n` and sampling rate `sample-rate`.")
   (defn frequency-axis [n sample-rate]
     (let [out-len (+ (/ n 2) 1)
           out (replicate out-len &0.0)
           df (/ sample-rate (Double.from-int n))]
       (do
-        (for [i 0 out-len]
-          (Array.aset! &out i (* (Double.from-int i) df)))
+        (for [i 0 out-len] (Array.aset! &out i (* (Double.from-int i) df)))
         out)))
 
-  (doc frequency-axis-full "generates the full frequency bins (size N) for a complex FFT of length `n` and sampling rate `sample-rate`.")
+  (doc frequency-axis-full
+    "generates the full frequency bins (size N) for a complex FFT of length `n` and sampling rate `sample-rate`.")
   (defn frequency-axis-full [n sample-rate]
     (let [out (replicate n &0.0)
           df (/ sample-rate (Double.from-int n))
           half (/ n 2)]
       (do
-        (for [i 0 half]
-          (Array.aset! &out i (* (Double.from-int i) df)))
-        (for [i half n]
-          (Array.aset! &out i (* (Double.from-int (- i n)) df)))
-        out)))
-)
+        (for [i 0 half] (Array.aset! &out i (* (Double.from-int i) df)))
+        (for [i half n] (Array.aset! &out i (* (Double.from-int (- i n)) df)))
+        out))))
